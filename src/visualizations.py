@@ -135,8 +135,63 @@ def plot_efficient_frontier(ef_df: pd.DataFrame, summary: pd.DataFrame) -> go.Fi
     return fig
 
 
+def plot_cumulative_returns(df: pd.DataFrame) -> go.Figure:
+    wide = df.pivot_table(index="date", columns="sector", values="daily_return").sort_index()
+    cumulative = (1 + wide).cumprod().resample("W").last()  # weekly to reduce noise
+    melted = cumulative.reset_index().melt(id_vars="date", var_name="sector", value_name="value")
+    fig = px.line(
+        melted.dropna(),
+        x="date", y="value", color="sector",
+        title="Cumulative Returns by Sector (2010–2020, $1 invested)",
+        labels={"value": "Portfolio Value ($)", "date": "Date", "sector": "Sector"},
+        template="plotly_white",
+    )
+    fig.add_hline(y=1, line_dash="dash", line_color="gray", opacity=0.4)
+    fig.update_layout(height=500)
+    return fig
+
+
+def plot_annual_returns_heatmap(df: pd.DataFrame) -> go.Figure:
+    tmp = df.copy()
+    tmp["year"] = pd.to_datetime(tmp["date"]).dt.year
+    annual = (
+        tmp.groupby(["sector", "year"])["daily_return"]
+        .apply(lambda r: (1 + r).prod() - 1)
+        .rename("annual_return")
+        .reset_index()
+    )
+    wide = annual.pivot(index="sector", columns="year", values="annual_return")
+    text = [[f"{v:.1%}" if pd.notna(v) else "" for v in row] for row in wide.values]
+    fig = go.Figure(go.Heatmap(
+        z=wide.values,
+        x=[str(y) for y in wide.columns],
+        y=wide.index.tolist(),
+        colorscale="RdYlGn",
+        zmid=0,
+        text=text,
+        texttemplate="%{text}",
+        textfont={"size": 10},
+        colorbar=dict(title="Annual Return", tickformat=".0%"),
+    ))
+    fig.update_layout(
+        title="Annual Return by Sector and Year (2010–2020)",
+        template="plotly_white",
+        xaxis=dict(title="Year"),
+        margin=dict(l=160, t=80),
+        height=460,
+    )
+    return fig
+
+
 def export_for_tableau(df: pd.DataFrame, filename: str = "sector_returns.csv") -> None:
     path = OUTPUT_DIR / "tableau" / filename
     path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(path, index=False)
+    print(f"Exported to {path}")
+
+
+def export_summary_for_tableau(summary: pd.DataFrame, filename: str = "sector_metrics.csv") -> None:
+    path = OUTPUT_DIR / "tableau" / filename
+    path.parent.mkdir(parents=True, exist_ok=True)
+    summary.to_csv(path, index=False)
     print(f"Exported to {path}")

@@ -80,9 +80,11 @@ def run_charts(args, summary=None):
 
 def run_export(args):
     from src.data_loader import load_returns
-    from src.visualizations import export_for_tableau
+    from src.metrics import sector_summary
+    from src.visualizations import export_for_tableau, export_summary_for_tableau
     returns = load_returns()
     export_for_tableau(returns)
+    export_summary_for_tableau(sector_summary(returns))
 
 
 def run_dashboard(args):

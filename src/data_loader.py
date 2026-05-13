@@ -59,9 +59,10 @@ def save_to_db(prices: pd.DataFrame, returns: pd.DataFrame) -> None:
 
 
 def download_benchmark(start: str = "2010-01-01", end: str = "2020-12-31") -> pd.DataFrame:
-    close = yf.download("SPY", start=start, end=end, auto_adjust=True, threads=False)["Close"]
+    close = yf.download("SPY", start=start, end=end, auto_adjust=True, threads=False, progress=False)["Close"]
+    close = close.squeeze()  # yfinance may return DataFrame or Series depending on version
     df = pd.DataFrame({"date": close.index, "close": close.values})
-    df["date"] = pd.to_datetime(df["date"])
+    df["date"] = pd.to_datetime(df["date"], utc=True).dt.tz_convert(None)  # strip timezone to match DB
     df["daily_return"] = df["close"].pct_change()
     return df.dropna(subset=["daily_return"])
 
