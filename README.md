@@ -4,10 +4,10 @@ S&P 500 sector analysis (2010–2020): risk-return profiling across 11 GICS sect
 
 ## Results
 
-![Cumulative Returns](output/screenshots/cumulative_returns.png)
-![Annual Return Heatmap](output/screenshots/annual_heatmap.png)
-![Risk vs. Return](output/screenshots/risk_return.png)
-![Efficient Frontier](output/screenshots/efficient_frontier.png)
+![Cumulative Returns](assets/cumulative_returns.png)
+![Annual Return Heatmap](assets/annual_heatmap.png)
+![Risk vs. Return](assets/risk_return.png)
+![Efficient Frontier](assets/efficient_frontier.png)
 
 ## Features
 
