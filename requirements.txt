@@ -4,4 +4,5 @@ yfinance==0.2.40
 sqlalchemy==2.0.30
 plotly==5.22.0
 jupyter==1.0.0
+dash>=2.18.0
 pytest==8.2.0

@@ -36,3 +36,53 @@ def sector_summary(df: pd.DataFrame) -> pd.DataFrame:
     vol = summary["annualized_volatility"]
     summary["sharpe_ratio"] = (summary["annualized_return"] - RISK_FREE_RATE) / vol.where(vol != 0)
     return summary.reset_index().sort_values("sharpe_ratio", ascending=False)
+
+
+def add_benchmark_metrics(
+    summary: pd.DataFrame, returns: pd.DataFrame, benchmark: pd.DataFrame
+) -> pd.DataFrame:
+    summary = summary.copy()
+    bm = benchmark.set_index("date")["daily_return"]
+    ann_bm = bm.mean() * TRADING_DAYS
+
+    betas, alphas = {}, {}
+    for _, row in summary.iterrows():
+        sec = row["sector"]
+        r = returns[returns["sector"] == sec].set_index("date")["daily_return"]
+        aligned = pd.concat([r, bm], axis=1).dropna()
+        aligned.columns = ["r", "bm"]
+        var = aligned["bm"].var()
+        b = aligned.cov().loc["r", "bm"] / var if var != 0 else np.nan
+        betas[sec] = b
+        alphas[sec] = row["annualized_return"] - (RISK_FREE_RATE + b * (ann_bm - RISK_FREE_RATE))
+
+    summary["beta"] = summary["sector"].map(betas)
+    summary["alpha"] = summary["sector"].map(alphas)
+    return summary
+
+
+def rolling_sharpe(df: pd.DataFrame, window: int = 252) -> pd.DataFrame:
+    result = {}
+    for sector, group in df.groupby("sector"):
+        r = group.set_index("date")["daily_return"].sort_index()
+        roll_mean = r.rolling(window).mean() * TRADING_DAYS
+        roll_std = r.rolling(window).std() * np.sqrt(TRADING_DAYS)
+        result[sector] = (roll_mean - RISK_FREE_RATE) / roll_std.where(roll_std > 0)
+    return pd.DataFrame(result)
+
+
+def efficient_frontier(df: pd.DataFrame, n_portfolios: int = 3000) -> pd.DataFrame:
+    wide = df.pivot_table(index="date", columns="sector", values="daily_return").dropna()
+    mean_ret = wide.mean() * TRADING_DAYS
+    cov = wide.cov() * TRADING_DAYS
+    n = len(mean_ret)
+
+    rng = np.random.default_rng(42)
+    rows = []
+    for _ in range(n_portfolios):
+        w = rng.random(n)
+        w /= w.sum()
+        ret = float(w @ mean_ret)
+        vol = float(np.sqrt(w @ cov.values @ w))
+        rows.append({"return": ret, "volatility": vol, "sharpe": (ret - RISK_FREE_RATE) / vol})
+    return pd.DataFrame(rows)

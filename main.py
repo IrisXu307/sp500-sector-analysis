@@ -8,6 +8,7 @@ Usage:
   python main.py --charts               # save HTML charts to output/ (requires DB)
   python main.py --export               # export Tableau CSV (requires DB)
   python main.py --test                 # run pytest test suite
+  python main.py --dashboard            # launch interactive Dash dashboard
   python main.py --metrics --charts     # combine steps
 """
 
@@ -84,6 +85,12 @@ def run_export(args):
     export_for_tableau(returns)
 
 
+def run_dashboard(args):
+    import subprocess
+    import sys
+    subprocess.run([sys.executable, "app.py"])
+
+
 def run_tests(args):
     import subprocess
     import sys
@@ -97,6 +104,7 @@ def main():
     parser.add_argument("--metrics", action="store_true", help="Print sector metrics table")
     parser.add_argument("--charts", action="store_true", help="Generate and save HTML charts")
     parser.add_argument("--export", action="store_true", help="Export Tableau CSV")
+    parser.add_argument("--dashboard", action="store_true", help="Launch interactive Dash dashboard")
     parser.add_argument("--test", action="store_true", help="Run pytest test suite")
     parser.add_argument("--start", default="2010-01-01", help="Start date (default: 2010-01-01)")
     parser.add_argument("--end", default="2020-12-31", help="End date (default: 2020-12-31)")
@@ -104,6 +112,10 @@ def main():
 
     if args.test:
         run_tests(args)
+        return
+
+    if args.dashboard:
+        run_dashboard(args)
         return
 
     run_all = not any([args.download, args.metrics, args.charts, args.export])

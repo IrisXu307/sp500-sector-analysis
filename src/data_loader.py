@@ -58,6 +58,14 @@ def save_to_db(prices: pd.DataFrame, returns: pd.DataFrame) -> None:
     print(f"Saved to {DB_PATH}")
 
 
+def download_benchmark(start: str = "2010-01-01", end: str = "2020-12-31") -> pd.DataFrame:
+    close = yf.download("SPY", start=start, end=end, auto_adjust=True, threads=False)["Close"]
+    df = pd.DataFrame({"date": close.index, "close": close.values})
+    df["date"] = pd.to_datetime(df["date"])
+    df["daily_return"] = df["close"].pct_change()
+    return df.dropna(subset=["daily_return"])
+
+
 def load_returns() -> pd.DataFrame:
     engine = _engine()
     try:
