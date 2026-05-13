@@ -37,10 +37,26 @@ def plot_risk_return_scatter(summary: pd.DataFrame) -> go.Figure:
         },
         template="plotly_white",
     )
-    fig.update_traces(textposition="top center")
+    # per-point label positions to avoid overlapping bubbles
+    positions = {
+        "Technology":               "top right",
+        "Consumer Discretionary":   "bottom left",
+        "Health Care":              "top left",
+        "Industrials":              "bottom right",
+        "Communication Services":   "top right",
+        "Financials":               "top right",
+        "Consumer Staples":         "top right",
+        "Utilities":                "bottom left",
+        "Materials":                "top left",
+        "Real Estate":              "bottom left",
+        "Energy":                   "bottom right",
+    }
+    fig.for_each_trace(
+        lambda t: t.update(textposition=positions.get(t.name, "top center"))
+    )
     fig.update_layout(
         height=620,
-        margin=dict(t=100, b=40, l=60, r=40),
+        margin=dict(t=100, b=40, l=120, r=40),
         yaxis=dict(range=[0, summary["annualized_return"].max() * 1.25]),
     )
     return fig
@@ -127,7 +143,7 @@ def plot_efficient_frontier(ef_df: pd.DataFrame, summary: pd.DataFrame) -> go.Fi
         template="plotly_white",
         height=580,
         legend=dict(
-            x=0.01, y=0.99, xanchor="left", yanchor="top",
+            x=0.01, y=0.01, xanchor="left", yanchor="bottom",
             bgcolor="rgba(255,255,255,0.85)", bordercolor="lightgray", borderwidth=1,
         ),
         margin=dict(r=100),

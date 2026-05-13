@@ -23,7 +23,7 @@ DB_PATH = Path(__file__).parent.parent / "data" / "processed" / "sp500.db"
 def download_prices(start: str = "2010-01-01", end: str = "2020-12-31") -> pd.DataFrame:
     tickers = list(SECTOR_ETFS.keys())
     raw = yf.download(tickers, start=start, end=end, auto_adjust=True, threads=False)["Close"]
-    raw = raw.stack().reset_index()
+    raw = raw.stack(future_stack=True).dropna().reset_index()
     raw.columns = ["date", "ticker", "close"]
     raw["sector"] = raw["ticker"].map(SECTOR_ETFS)
     raw["date"] = pd.to_datetime(raw["date"]).dt.date

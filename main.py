@@ -50,27 +50,37 @@ def run_metrics(args):
 
 def run_charts(args, summary=None):
     from src.data_loader import load_returns
-    from src.metrics import sector_summary
+    from src.metrics import sector_summary, rolling_sharpe, efficient_frontier
     from src.visualizations import (
         plot_sector_returns,
         plot_risk_return_scatter,
         plot_correlation_heatmap,
+        plot_cumulative_returns,
+        plot_annual_returns_heatmap,
+        plot_rolling_sharpe,
+        plot_efficient_frontier,
     )
 
+    returns = load_returns()
     if summary is None:
-        returns = load_returns()
         summary = sector_summary(returns)
-    else:
-        returns = load_returns()
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    returns_wide = returns.pivot_table(index="date", columns="sector", values="daily_return")
+
+    print("Computing rolling Sharpe...")
+    rolling = rolling_sharpe(returns)
+    print("Computing efficient frontier (3,000 portfolios)...")
+    ef_df = efficient_frontier(returns)
 
     charts = {
-        "sector_returns.html": plot_sector_returns(summary),
+        "sector_returns.html":      plot_sector_returns(summary),
+        "cumulative_returns.html":  plot_cumulative_returns(returns),
+        "annual_heatmap.html":      plot_annual_returns_heatmap(returns),
         "risk_return_scatter.html": plot_risk_return_scatter(summary),
-        "correlation_heatmap.html": plot_correlation_heatmap(
-            returns.pivot_table(index="date", columns="sector", values="daily_return")
-        ),
+        "correlation_heatmap.html": plot_correlation_heatmap(returns_wide),
+        "rolling_sharpe.html":      plot_rolling_sharpe(rolling),
+        "efficient_frontier.html":  plot_efficient_frontier(ef_df, summary),
     }
     for filename, fig in charts.items():
         path = OUTPUT_DIR / filename
