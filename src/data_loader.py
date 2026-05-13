@@ -37,10 +37,11 @@ def compute_returns(prices: pd.DataFrame) -> pd.DataFrame:
 
 
 def save_to_db(prices: pd.DataFrame, returns: pd.DataFrame) -> None:
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     engine = sa.create_engine(f"sqlite:///{DB_PATH}")
-    prices[["date", "ticker", "sector", "close"]].rename(
-        columns={"close": "close"}
-    ).to_sql("sector_prices", engine, if_exists="replace", index=False)
+    prices[["date", "ticker", "sector", "close"]].to_sql(
+        "sector_prices", engine, if_exists="replace", index=False
+    )
     returns[["date", "ticker", "sector", "daily_return"]].to_sql(
         "sector_returns", engine, if_exists="replace", index=False
     )

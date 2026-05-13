@@ -26,7 +26,7 @@ def plot_risk_return_scatter(summary: pd.DataFrame) -> go.Figure:
         x="annualized_volatility",
         y="annualized_return",
         text="sector",
-        size="sharpe_ratio",
+        size=summary["sharpe_ratio"].clip(lower=0),
         title="Risk vs. Return by Sector (2010–2020)",
         labels={
             "annualized_volatility": "Annualized Volatility (Risk)",
