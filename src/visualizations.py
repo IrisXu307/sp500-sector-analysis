@@ -37,26 +37,10 @@ def plot_risk_return_scatter(summary: pd.DataFrame) -> go.Figure:
         },
         template="plotly_white",
     )
-    # per-point label positions to avoid overlapping bubbles
-    positions = {
-        "Technology":               "top right",
-        "Consumer Discretionary":   "bottom left",
-        "Health Care":              "top left",
-        "Industrials":              "bottom right",
-        "Communication Services":   "top right",
-        "Financials":               "top right",
-        "Consumer Staples":         "top right",
-        "Utilities":                "bottom left",
-        "Materials":                "top left",
-        "Real Estate":              "bottom left",
-        "Energy":                   "bottom right",
-    }
-    fig.for_each_trace(
-        lambda t: t.update(textposition=positions.get(t.name, "top center"))
-    )
+    fig.update_traces(textposition="bottom center")
     fig.update_layout(
         height=620,
-        margin=dict(t=100, b=40, l=120, r=40),
+        margin=dict(t=100, b=60, l=60, r=40),
         yaxis=dict(range=[0, summary["annualized_return"].max() * 1.25]),
     )
     return fig
