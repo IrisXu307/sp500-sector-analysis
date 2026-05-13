@@ -2,6 +2,13 @@
 
 S&P 500 sector analysis (2010–2020): risk-return profiling across 11 GICS sectors using Python, pandas, SQL, Plotly, and Tableau.
 
+## Results
+
+![Cumulative Returns](output/screenshots/cumulative_returns.png)
+![Annual Return Heatmap](output/screenshots/annual_heatmap.png)
+![Risk vs. Return](output/screenshots/risk_return.png)
+![Efficient Frontier](output/screenshots/efficient_frontier.png)
+
 ## Features
 
 - **Data pipeline** — downloads adjusted close prices via yfinance, computes daily returns, stores in SQLite
